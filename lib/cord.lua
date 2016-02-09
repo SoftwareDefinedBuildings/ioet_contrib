@@ -29,8 +29,10 @@ cord.await = function(f, ...)
     local aidx = cord._activeidx
     local args = {...}
     args[#args+1] = function (...)
-        cord._cors[aidx].s=cord._PROMISEDONE
-        cord._cors[aidx].rv={... }
+        if cord._cors[aidx] ~= nil then
+            cord._cors[aidx].s=cord._PROMISEDONE
+            cord._cors[aidx].rv={... }
+        end
     end
     f(unpack(args))
     return coroutine.yield()
@@ -41,7 +43,9 @@ cord.enter_loop = function ()
         local ro = false
         local s
         for i,v in pairs(cord._cors) do
-            if v.s == cord._READY or v.s == cord._PROMISEDONE then
+            if v.k then
+                cord._cors[i] = nil
+            elseif v.s == cord._READY or v.s == cord._PROMISEDONE then
                 ro = true
                 cord._activeidx = i
                 v.s = cord._READY

@@ -27,9 +27,14 @@
 #include "natlib/util.c"
 #include "natlib/svcd.c"
 #include "natlib/analog/analog.c"
-#include "natlib/neopixel.c"
 
 #include "natlib/reliableNetworkQueue/rnq.c"
+
+#include "natlib/chair/chaircontrol.c"
+#include "natlib/chair/blchair.c"
+#include "natlib/chair/flash.c"
+#include "natlib/chair/receiver.c"
+#include "natlib/neopixel.c"
 
 
 ////////////////// BEGIN FUNCTIONS /////////////////////////////
@@ -184,6 +189,11 @@ const LUA_REG_TYPE contrib_native_map[] =
     { LSTRKEY( "makecounter"), LFUNCVAL ( contrib_makecounter ) },
 
     SVCD_SYMBOLS
+    CHAIRCONTROL_SYMBOLS
+    I2CCHAIR_SYMBOLS
+    BLCHAIR_SYMBOLS
+    FLASH_SYMBOLS
+    RECEIVER_SYMBOLS
     ADCIFE_SYMBOLS
     RNQ_SYMBOLS
     NEOPIXEL_SYMBOLS
