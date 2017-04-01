@@ -1,6 +1,6 @@
 LCD = require "lcd"
 
-lcd = LCD:new(storm.i2c.EXT, 0x7c, storm.i2c.EXT, 0xc4)
+lcd = LCD:new(storm.i2c.INT, 0x7c, storm.i2c.INT, 0xc4)
 cord.new(function ()
     lcd:init(2, 1)
     lcd:writeString("THE INTERNET OF")

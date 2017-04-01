@@ -27,9 +27,14 @@
 #include "natlib/util.c"
 #include "natlib/svcd.c"
 #include "natlib/analog/analog.c"
-#include "natlib/neopixel.c"
 
 #include "natlib/reliableNetworkQueue/rnq.c"
+
+// #include "natlib/chair/chaircontrol.c"
+// #include "natlib/chair/blchair.c"
+// #include "natlib/chair/flash.c"
+// #include "natlib/chair/receiver.c"
+#include "natlib/neopixel.c"
 
 
 ////////////////// BEGIN FUNCTIONS /////////////////////////////
@@ -174,6 +179,82 @@ static int contrib_helloX_tail(lua_State *L)
     }
 }
 
+int bytesread = 0;
+
+static int contrib_tcp_demo_get_kbits_read_and_reset(lua_State* L) {
+    int kbitsread = (bytesread << 3) / 1000;
+    bytesread = 0;
+    lua_pushnumber(L, kbitsread);
+    return 1;
+}
+
+static int contrib_tcp_demo_recvforever(lua_State* L) {
+    lua_pushlightfunction(L, libstorm_net_tcprecvfull);
+    lua_pushvalue(L, lua_upvalueindex(1)); // csock
+    lua_pushnumber(L, 256);
+    lua_pushvalue(L, lua_upvalueindex(1));
+    lua_pushcclosure(L, contrib_tcp_demo_recvforever, 1);
+    lua_call(L, 3, 0);
+    bytesread += 256;
+    return 0;
+}
+
+static int contrib_tcp_demo_on_data(lua_State* L) {
+    while (1) {
+        lua_pushlightfunction(L, libstorm_net_tcprecv);
+        lua_pushvalue(L, lua_upvalueindex(1));
+        lua_pushnumber(L, 256);
+        lua_call(L, 2, 2);
+
+        int len = lua_objlen(L, -1);
+        lua_pop(L, 1); // we're in a loop, so make stack flat
+        bytesread += len;
+        if (len != 256) {
+            return 0;
+        }
+    }
+    return 0;
+}
+
+static int contrib_tcp_demo_on_accept(lua_State* L) {
+    //csock is top of stack
+    if (lua_isnil(L, -1)) {
+        return 0;
+    }
+
+    //csock is top of stack
+    printf("Accepted connection\n");
+    /*lua_pushlightfunction(L, libstorm_net_tcpaddconnectdone);
+    lua_pushvalue(L, 1);
+    lua_pushvalue(L, 1);
+    lua_pushcclosure(L, contrib_tcp_demo_recvforever, 1);
+    lua_call(L, 2, 0);*/
+
+    lua_pushlightfunction(L, libstorm_net_tcpaddrecvready);
+    lua_pushvalue(L, 1);
+    lua_pushvalue(L, 1);
+    lua_pushcclosure(L, contrib_tcp_demo_on_data, 1);
+    lua_call(L, 2, 0);
+    return 0;
+}
+
+static int contrib_tcp_demo(lua_State* L) {
+    lua_pushlightfunction(L, libstorm_net_tcppassivesocket);
+    lua_call(L, 0, 1);
+    //passive socket is top of stack
+    lua_pushlightfunction(L, libstorm_net_tcpbind);
+    lua_pushvalue(L, -2);
+    lua_pushnumber(L, 4000);
+    lua_call(L, 2, 0);
+    //passive socket it still top of stack
+    lua_pushlightfunction(L, libstorm_net_tcplistenaccept);
+    lua_pushvalue(L, -2);
+    lua_pushnumber(L, 2500); // receive buffer
+    lua_pushlightfunction(L, contrib_tcp_demo_on_accept);
+    lua_call(L, 3, 0);
+    return 0;
+}
+
 ////////////////// BEGIN MODULE MAP /////////////////////////////
 const LUA_REG_TYPE contrib_native_map[] =
 {
@@ -184,9 +265,14 @@ const LUA_REG_TYPE contrib_native_map[] =
     { LSTRKEY( "makecounter"), LFUNCVAL ( contrib_makecounter ) },
 
     SVCD_SYMBOLS
+    //CHAIRCONTROL_SYMBOLS
+    //I2CCHAIR_SYMBOLS
+    //BLCHAIR_SYMBOLS
+    //FLASH_SYMBOLS
+    //RECEIVER_SYMBOLS
     ADCIFE_SYMBOLS
     RNQ_SYMBOLS
-    NEOPIXEL_SYMBOLS
+    //NEOPIXEL_SYMBOLS
 
     /* Constants for the Temp sensor. */
     // -- Register address --
@@ -206,6 +292,9 @@ const LUA_REG_TYPE contrib_native_map[] =
     { LSTRKEY( "TMP006_CFG_16SAMPLE" ), LNUMVAL(0x08)},
     { LSTRKEY( "TMP006_CFG_DRDYEN" ), LNUMVAL(0x01)},
     { LSTRKEY( "TMP006_CFG_DRDY" ), LNUMVAL(0x80)},
+
+    { LSTRKEY( "tcpGetKbitsReset"), LFUNCVAL(contrib_tcp_demo_get_kbits_read_and_reset)},
+    { LSTRKEY( "tcpDemo" ), LFUNCVAL(contrib_tcp_demo)},
 
     //The list must end with this
     { LNILKEY, LNILVAL }

@@ -10,50 +10,50 @@ self. ]]--
 
 local codes = {
     LCD_CLEARDISPLAY = 0x01,
-    LCD_RETURNHOME = 0x02,
-    LCD_ENTRYMODESET = 0x04,
+    --LCD_RETURNHOME = 0x02,
+    --LCD_ENTRYMODESET = 0x04,
     LCD_DISPLAYCONTROL = 0x08,
-    LCD_CURSORSHIFT = 0x10,
+    --LCD_CURSORSHIFT = 0x10,
     LCD_FUNCTIONSET = 0x20,
-    LCD_SETCGRAMADDR = 0x40,
-    LCD_SETDDRAMADDR = 0x80,
+    --LCD_SETCGRAMADDR = 0x40,
+    --LCD_SETDDRAMADDR = 0x80,
 
     --lags for display entry mode
-    LCD_ENTRYRIGHT = 0x00,
+    --LCD_ENTRYRIGHT = 0x00,
     LCD_ENTRYLEFT = 0x02,
-    LCD_ENTRYSHIFTINCREMENT = 0x01,
+    --LCD_ENTRYSHIFTINCREMENT = 0x01,
     LCD_ENTRYSHIFTDECREMENT = 0x00,
 
     --lags for display on/off control
     LCD_DISPLAYON = 0x04,
-    LCD_DISPLAYOFF = 0x00,
+    --LCD_DISPLAYOFF = 0x00,
     LCD_CURSORON = 0x02,
-    LCD_CURSOROFF = 0x00,
+    --LCD_CURSOROFF = 0x00,
     LCD_BLINKON = 0x01,
-    LCD_BLINKOFF = 0x00,
+    --LCD_BLINKOFF = 0x00,
 
     --flags for display/cursor shift
-    LCD_DISPLAYMOVE = 0x08,
-    LCD_CURSORMOVE = 0x00,
-    LCD_MOVERIGHT = 0x04,
-    LCD_MOVELEFT = 0x00,
+    --LCD_DISPLAYMOVE = 0x08,
+    --LCD_CURSORMOVE = 0x00,
+    --LCD_MOVERIGHT = 0x04,
+    --LCD_MOVELEFT = 0x00,
 
     --flags for function set
     LCD_8BITMODE = 0x10,
-    LCD_4BITMODE = 0x00,
+    --LCD_4BITMODE = 0x00,
     LCD_2LINE = 0x08,
-    LCD_1LINE = 0x00,
-    LCD_5x10DOTS = 0x04,
+    --LCD_1LINE = 0x00,
+    --LCD_5x10DOTS = 0x04,
     LCD_5x8DOTS = 0x00,
-    
+
     -- flags for communication
     LCD_COMMAND = 0x80,
     LCD_WRITE = 0x40,
-    
+
     RED_ADDR = 0x04,
     GREEN_ADDR = 0x03,
     BLUE_ADDR = 0x02,
-    
+
     LED_OUTPUT = 0x08,
 }
 
@@ -106,7 +106,7 @@ function LCD:init(lines, dotsize)
             self._dc  = codes.LCD_DISPLAYON + codes.LCD_CURSORON + codes.LCD_BLINKON
             self:display()
             cord.await(storm.os.invokeLater, 50*storm.os.MILLISECOND)
-            
+
             -- Initialization work for the backlight LED. --
             self.rgbreg:w(0, 0)
             self.rgbreg:w(1, 0)
